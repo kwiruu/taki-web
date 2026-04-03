@@ -22,7 +22,7 @@ import ReleasesDoc from "@/content/releases.mdx";
 import ThemesDoc from "@/content/themes.mdx";
 import TroubleshootingDoc from "@/content/troubleshooting.mdx";
 import { cliData } from "@/data/generated/cli-data";
-import { GitCommitHorizontal, Moon, Sun, Tag } from "lucide-react";
+import { GitCommitHorizontal, Menu, Moon, Sun, Tag, X } from "lucide-react";
 
 const docsNavItems = [
   { label: "Quick Start", to: "/docs/quick-start" },
@@ -347,20 +347,23 @@ function DocsShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)_220px]">
-      <aside className="h-fit p-3 lg:sticky lg:top-24">
+      <aside className="h-fit p-1 lg:sticky lg:top-24">
         <p className="px-2 pb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
           Docs Index
         </p>
-        <nav className="space-y-1 flex flex-col">
+        <nav className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:space-y-1 lg:gap-1 lg:overflow-visible lg:pb-0">
           {docsNavItems.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className={cn(docsNavLinkClass, "justify-start h-9 w-full")}
+              className={cn(
+                docsNavLinkClass,
+                "h-9 shrink-0 justify-start px-3 lg:w-full",
+              )}
               activeProps={{
                 className: cn(
                   docsNavLinkClass,
-                  "justify-start bg-muted text-foreground",
+                  "justify-start bg-muted text-foreground lg:w-full",
                 ),
               }}
             >
@@ -465,11 +468,16 @@ export function RootLayout() {
     const storedTheme = window.localStorage.getItem("taki-docs-theme");
     return storedTheme === "dark" ? "dark" : "light";
   });
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
     window.localStorage.setItem("taki-docs-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const pathname = location.pathname;
@@ -500,87 +508,32 @@ export function RootLayout() {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_20%_20%,oklch(0.96_0.03_180)_0,transparent_40%),radial-gradient(circle_at_80%_0%,oklch(0.92_0.04_50)_0,transparent_35%),oklch(0.99_0_0)]">
       <header className="bg-background/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4">
-          <Link to="/" className="flex items-center gap-3">
-            <img
-              src="/logo.svg"
-              alt="Taki logo"
-              className="h-7 w-auto dark:invert"
-            />
-            <div>
-              <p className="text-xs tracking-[0.18em] text-muted-foreground">
-                taki-cli
-              </p>
-              <h1 className="text-lg font-semibold">Taki Docs</h1>
-            </div>
-          </Link>
-          <div className="flex items-center gap-2">
-            <nav className="flex items-center gap-2">
-              <Link
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "sm" }),
-                  "h-10",
-                )}
-                to="/"
-              >
-                Home
-              </Link>
-              <Link
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "sm" }),
-                  "h-10",
-                )}
-                to="/docs"
-              >
-                Docs
-              </Link>
-              <Link
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "sm" }),
-                  "h-10",
-                )}
-                to="/docs/install"
-              >
-                Install
-              </Link>
-              <Link
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "sm" }),
-                  "h-10",
-                )}
-                to="/releases"
-              >
-                Releases
-              </Link>
-            </nav>
+        <div className="mx-auto w-full max-w-6xl px-4 py-4 sm:px-5">
+          <div className="flex items-center justify-between gap-3">
+            <Link to="/" className="flex items-center gap-3">
+              <img
+                src="/logo.svg"
+                alt="Taki logo"
+                className="h-7 w-auto dark:invert"
+              />
+              <div>
+                <p className="text-xs tracking-[0.18em] text-muted-foreground">
+                  taki-cli
+                </p>
+                <h1 className="text-lg font-semibold">Taki Docs</h1>
+              </div>
+            </Link>
 
-            <Separator orientation="vertical" className="my-2" />
-
-            <button
-              type="button"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "lg" }),
-                "h-10",
-              )}
-              onClick={() =>
-                setTheme((current) => (current === "light" ? "dark" : "light"))
-              }
-              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-            >
-              {theme === "light" ? <Moon /> : <Sun />}
-            </button>
-
-            <Separator orientation="vertical" className="my-2" />
-
-            <div>
+            <div className="flex items-center gap-1 sm:gap-2">
               <a
                 className={cn(
                   buttonVariants({ variant: "ghost", size: "sm" }),
-                  "h-10 text-muted-foreground gap-2",
+                  "h-9 text-muted-foreground sm:h-10",
                 )}
-                href="https://github.com/kwiruu/taki-cli"
+                href="https://www.npmjs.com/package/@kwiruu/taki-cli"
                 target="_blank"
                 rel="noreferrer"
+                aria-label="Open taki-cli on npm"
               >
                 <svg
                   viewBox="0 0 512 512"
@@ -589,6 +542,8 @@ export function RootLayout() {
                   clip-rule="evenodd"
                   stroke-linejoin="round"
                   stroke-miterlimit="2"
+                  className="h-5 w-5"
+                  aria-hidden="true"
                 >
                   <g fill-rule="nonzero">
                     <path
@@ -602,28 +557,143 @@ export function RootLayout() {
                   </g>
                 </svg>
               </a>
+
               <a
                 className={cn(
                   buttonVariants({ variant: "ghost", size: "sm" }),
-                  "h-10 text-muted-foreground gap-2",
+                  "h-9 text-muted-foreground sm:h-10",
                 )}
                 href="https://github.com/kwiruu/taki-cli"
                 target="_blank"
                 rel="noreferrer"
+                aria-label="Open taki-cli on GitHub"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 16 16"
                   fill="currentColor"
-                  className="bi bi-github h-5 w-5 text-black dark:text-white"
+                  className="h-5 w-5 text-black dark:text-white"
                   aria-hidden="true"
                 >
                   <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8" />
                 </svg>
-                {formatValue(cliData.stats.stars)}
               </a>
+
+              <button
+                type="button"
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "lg" }),
+                  "h-9 sm:h-10",
+                )}
+                onClick={() =>
+                  setTheme((current) =>
+                    current === "light" ? "dark" : "light",
+                  )
+                }
+                aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+              >
+                {theme === "light" ? <Moon /> : <Sun />}
+              </button>
+
+              <button
+                type="button"
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "lg" }),
+                  "h-9 md:hidden",
+                )}
+                onClick={() => setIsMobileNavOpen((open) => !open)}
+                aria-label={isMobileNavOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={isMobileNavOpen}
+                aria-controls="mobile-nav-menu"
+              >
+                {isMobileNavOpen ? <X /> : <Menu />}
+              </button>
             </div>
           </div>
+
+          <div className="mt-3 hidden items-center justify-end gap-2 md:flex">
+            <nav className="flex min-w-0 items-center gap-1 sm:gap-2 md:flex-none">
+              <Link
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  "h-9 px-3 sm:h-10",
+                )}
+                to="/"
+              >
+                Home
+              </Link>
+              <Link
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  "h-9 px-3 sm:h-10",
+                )}
+                to="/docs"
+              >
+                Docs
+              </Link>
+              <Link
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  "h-9 px-3 sm:h-10",
+                )}
+                to="/docs/install"
+              >
+                Install
+              </Link>
+              <Link
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  "h-9 px-3 sm:h-10",
+                )}
+                to="/releases"
+              >
+                Releases
+              </Link>
+            </nav>
+          </div>
+
+          {isMobileNavOpen ? (
+            <div id="mobile-nav-menu" className="mt-3 md:hidden">
+              <nav className="grid gap-1 rounded-xl border border-border/70 bg-card/70 p-2">
+                <Link
+                  className={cn(
+                    buttonVariants({ variant: "ghost", size: "sm" }),
+                    "h-10 justify-start",
+                  )}
+                  to="/"
+                >
+                  Home
+                </Link>
+                <Link
+                  className={cn(
+                    buttonVariants({ variant: "ghost", size: "sm" }),
+                    "h-10 justify-start",
+                  )}
+                  to="/docs"
+                >
+                  Docs
+                </Link>
+                <Link
+                  className={cn(
+                    buttonVariants({ variant: "ghost", size: "sm" }),
+                    "h-10 justify-start",
+                  )}
+                  to="/docs/install"
+                >
+                  Install
+                </Link>
+                <Link
+                  className={cn(
+                    buttonVariants({ variant: "ghost", size: "sm" }),
+                    "h-10 justify-start",
+                  )}
+                  to="/releases"
+                >
+                  Releases
+                </Link>
+              </nav>
+            </div>
+          ) : null}
         </div>
       </header>
 
@@ -639,7 +709,7 @@ export function HomePage() {
     <div className="space-y-8">
       <section className="space-y-4">
         <Badge variant="secondary">Phase 2A in progress</Badge>
-        <h2 className="max-w-3xl text-4xl font-semibold leading-tight">
+        <h2 className="max-w-3xl text-3xl font-semibold leading-tight sm:text-4xl">
           Run and monitor local multi-service workflows from one terminal UI.
         </h2>
         <p className="max-w-2xl text-muted-foreground">
@@ -648,7 +718,7 @@ export function HomePage() {
           checks.
         </p>
         <div className="flex flex-wrap items-center gap-3">
-          <code className="rounded-md border bg-card px-3 py-2 text-sm">
+          <code className="w-full overflow-x-auto rounded-md border bg-card px-3 py-2 text-sm sm:w-auto">
             npm install -g @kwiruu/taki-cli
           </code>
           <Link className={buttonVariants({ size: "lg" })} to="/docs/install">
@@ -701,9 +771,9 @@ export function HomePage() {
       </section>
 
       <section className="space-y-3">
-        <div className="bg-vid pointer-events-none relative aspect-[16/7] overflow-hidden rounded-2xl bg-[url('/bg-vid.svg')] bg-cover bg-center shadow-sm">
+        <div className="bg-vid pointer-events-none relative aspect-[16/10] overflow-hidden rounded-2xl bg-[url('/bg-vid.svg')] bg-cover bg-center shadow-sm sm:aspect-[16/8] lg:aspect-[16/7]">
           <video
-            className="h-full w-4xl m-auto mt-15 rounded-2xl object-cover object-top"
+            className="mx-auto mt-4 h-full w-full max-w-4xl rounded-2xl object-cover object-top sm:mt-8"
             src="/demo.mp4"
             autoPlay
             muted
@@ -872,7 +942,7 @@ export function ReleasesPage() {
       <DataCards />
 
       <section className="space-y-4">
-        <div className="space-y-2 my-16">
+        <div className="my-10 space-y-2 sm:my-16">
           <div className="flex flex-wrap items-center gap-3">
             <Badge variant="secondary">taki-cli releases</Badge>
           </div>
