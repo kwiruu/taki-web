@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-04-03T18:07:50.517Z",
-  "stale": false,
+  "generatedAt": "2026-04-03T18:12:49.814Z",
+  "stale": true,
   "source": {
     "repository": "kwiruu/taki-cli",
     "packageName": "@kwiruu/taki-cli"
@@ -25,8 +25,8 @@
       "url": "https://github.com/kwiruu/taki-cli/releases/tag/taki-cli-v0.8.0",
       "notes": "## What's Changed\n* chore(main): release taki-cli 0.8.0 by @github-actions[bot] in https://github.com/kwiruu/taki-cli/pull/7\n\n\n**Full Changelog**: https://github.com/kwiruu/taki-cli/compare/taki-cli-v0.7.0...taki-cli-v0.8.0",
       "isPrerelease": false,
-      "actorLogin": "kwiruu",
-      "actorAvatarUrl": "https://avatars.githubusercontent.com/u/146981406?v=4",
+      "actorLogin": "github-actions[bot]",
+      "actorAvatarUrl": "https://avatars.githubusercontent.com/in/15368?v=4",
       "commitSha": "731b87fd88c469466dbfa89a8f863876ee9f1778"
     },
     {
@@ -58,8 +58,8 @@
       "url": "https://github.com/kwiruu/taki-cli/releases/tag/taki-cli-v0.2.0",
       "notes": "## [0.2.0](https://github.com/kwiruu/taki-cli/compare/taki-cli-v0.1.0...taki-cli-v0.2.0) (2026-04-03)\r\n\r\n\r\n### Features\r\n\r\n* added taki config, version, add, fixed restart and command executables ([415f984](https://github.com/kwiruu/taki-cli/commit/415f9845e61972237bbaa1566682cec651d403b0))\r\n* added themes, updated taki ascii ([941d108](https://github.com/kwiruu/taki-cli/commit/941d10840ede3ab6f4f6b5b97b10a828b9f03e60))\r\n\r\n\r\n### Bug Fixes\r\n\r\n* add readme to release please ([9b11762](https://github.com/kwiruu/taki-cli/commit/9b11762be8c9e0d355b9b405e36e280047968771))",
       "isPrerelease": false,
-      "actorLogin": "kwiruu",
-      "actorAvatarUrl": "https://avatars.githubusercontent.com/u/146981406?v=4",
+      "actorLogin": "github-actions[bot]",
+      "actorAvatarUrl": "https://avatars.githubusercontent.com/in/15368?v=4",
       "commitSha": "f910b4cd666eae3d67c1432186ba721b6c384525"
     }
   ],

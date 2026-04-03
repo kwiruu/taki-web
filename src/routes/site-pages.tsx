@@ -52,6 +52,119 @@ type ReleaseEntry = {
   commitSha: string | null;
 };
 
+const SITE_URL = "https://taki-web.pages.dev";
+
+type SeoMeta = {
+  title: string;
+  description: string;
+};
+
+const DEFAULT_SEO: SeoMeta = {
+  title: "Taki Docs | Run and monitor local services in one terminal UI",
+  description:
+    "Documentation for @kwiruu/taki-cli with install steps, command usage, dashboard controls, themes, troubleshooting, and release notes.",
+};
+
+function getSeoMeta(pathname: string): SeoMeta {
+  if (pathname === "/") {
+    return DEFAULT_SEO;
+  }
+
+  if (pathname === "/docs" || pathname === "/docs/quick-start") {
+    return {
+      title: "Quick Start | Taki Docs",
+      description:
+        "Get started with @kwiruu/taki-cli quickly: setup, initialize config, and launch your terminal dashboard.",
+    };
+  }
+
+  if (pathname === "/docs/install") {
+    return {
+      title: "Install | Taki Docs",
+      description:
+        "Install @kwiruu/taki-cli globally or run it locally for development workflows.",
+    };
+  }
+
+  if (pathname === "/docs/commands") {
+    return {
+      title: "Commands | Taki Docs",
+      description:
+        "Reference for Taki CLI commands, flags, and usage examples for run, init, add, and config.",
+    };
+  }
+
+  if (pathname === "/docs/dashboard") {
+    return {
+      title: "Dashboard | Taki Docs",
+      description:
+        "Learn dashboard controls, pane layouts, shortcuts, and service management behavior in Taki CLI.",
+    };
+  }
+
+  if (pathname === "/docs/themes") {
+    return {
+      title: "Themes | Taki Docs",
+      description:
+        "Explore built-in Taki CLI themes and customize terminal appearance for your workflow.",
+    };
+  }
+
+  if (pathname === "/docs/config") {
+    return {
+      title: "Config | Taki Docs",
+      description:
+        "Understand the taki.json schema, service options, and health-check configuration.",
+    };
+  }
+
+  if (pathname === "/docs/troubleshooting") {
+    return {
+      title: "Troubleshooting | Taki Docs",
+      description:
+        "Fix common Taki CLI issues with diagnostics, config checks, and platform-specific guidance.",
+    };
+  }
+
+  if (pathname === "/releases") {
+    return {
+      title: "Releases and Changelog | Taki Docs",
+      description:
+        "Track Taki CLI releases, changelog notes, commit history, and package publication status.",
+    };
+  }
+
+  return DEFAULT_SEO;
+}
+
+function setMetaTag(key: string, content: string, attribute: "name" | "property") {
+  let tag = document.head.querySelector(
+    `meta[${attribute}="${key}"]`,
+  ) as HTMLMetaElement | null;
+
+  if (!tag) {
+    tag = document.createElement("meta");
+    tag.setAttribute(attribute, key);
+    document.head.appendChild(tag);
+  }
+
+  tag.setAttribute("content", content);
+}
+
+function setCanonical(url: string) {
+  let link = document.head.querySelector(
+    'link[rel="canonical"]',
+  ) as HTMLLinkElement | null;
+
+  if (!link) {
+    link = document.createElement("link");
+    link.setAttribute("rel", "canonical");
+    document.head.appendChild(link);
+  }
+
+  link.setAttribute("href", url);
+}
+
 function slugifyHeading(text: string): string {
   return text
     .toLowerCase()
@@ -342,6 +455,8 @@ function DataCards() {
 }
 
 export function RootLayout() {
+  const location = useLocation();
+
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window === "undefined") {
       return "light";
@@ -355,6 +470,32 @@ export function RootLayout() {
     document.documentElement.classList.toggle("dark", theme === "dark");
     window.localStorage.setItem("taki-docs-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const pathname = location.pathname;
+    const { title, description } = getSeoMeta(pathname);
+    const pathSuffix = pathname === "/" ? "" : pathname;
+    const pageUrl = `${SITE_URL}${pathSuffix}`;
+
+    document.title = title;
+    setCanonical(pageUrl);
+
+    setMetaTag("description", description, "name");
+    setMetaTag("robots", "index,follow", "name");
+    setMetaTag("application-name", "Taki Docs", "name");
+
+    setMetaTag("og:type", "website", "property");
+    setMetaTag("og:title", title, "property");
+    setMetaTag("og:description", description, "property");
+    setMetaTag("og:url", pageUrl, "property");
+    setMetaTag("og:site_name", "Taki Docs", "property");
+    setMetaTag("og:image", `${SITE_URL}/logo.svg`, "property");
+
+    setMetaTag("twitter:card", "summary_large_image", "name");
+    setMetaTag("twitter:title", title, "name");
+    setMetaTag("twitter:description", description, "name");
+    setMetaTag("twitter:image", `${SITE_URL}/logo.svg`, "name");
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_20%_20%,oklch(0.96_0.03_180)_0,transparent_40%),radial-gradient(circle_at_80%_0%,oklch(0.92_0.04_50)_0,transparent_35%),oklch(0.99_0_0)]">
