@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-04-03T19:12:25.552Z",
-  "stale": true,
+  "generatedAt": "2026-04-03T20:12:30.855Z",
+  "stale": false,
   "source": {
     "repository": "kwiruu/taki-cli",
     "packageName": "@kwiruu/taki-cli"
