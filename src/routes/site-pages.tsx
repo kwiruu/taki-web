@@ -351,19 +351,16 @@ function DocsShell({ children }: { children: ReactNode }) {
         <p className="px-2 pb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
           Docs Index
         </p>
-        <nav className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:space-y-1 lg:gap-1 lg:overflow-visible lg:pb-0">
+        <nav className="flex flex-col space-y-1">
           {docsNavItems.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className={cn(
-                docsNavLinkClass,
-                "h-9 shrink-0 justify-start px-3 lg:w-full",
-              )}
+              className={cn(docsNavLinkClass, "h-9 w-full justify-start px-3")}
               activeProps={{
                 className: cn(
                   docsNavLinkClass,
-                  "justify-start bg-muted text-foreground lg:w-full",
+                  "w-full justify-start bg-muted text-foreground",
                 ),
               }}
             >
