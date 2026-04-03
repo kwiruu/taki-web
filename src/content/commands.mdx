@@ -32,12 +32,28 @@ taki version
 		<CardDescription>These flags can be used with most commands.</CardDescription>
 	</CardHeader>
 	<CardContent>
-
-| Option                    | Purpose                             |
-| ------------------------- | ----------------------------------- |
-| `--config <path>`         | Use a non-default config file       |
-| `--max-log-lines <count>` | Cap in-memory log lines per service |
-| `--shutdown-timeout <ms>` | Time budget for graceful shutdown   |
+        <table>
+            <thead>
+                <tr>
+                    <th>Option</th>
+                    <th>Purpose</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>--config &lt;path&gt;</code></td>
+                    <td>Use a non-default config file</td>
+                </tr>
+                <tr>
+                    <td><code>--max-log-lines &lt;count&gt;</code></td>
+                    <td>Cap in-memory log lines per service</td>
+                </tr>
+                <tr>
+                    <td><code>--shutdown-timeout &lt;ms&gt;</code></td>
+                    <td>Time budget for graceful shutdown</td>
+                </tr>
+            </tbody>
+        </table>
 
     </CardContent>
 
