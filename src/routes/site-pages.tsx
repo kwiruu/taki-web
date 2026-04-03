@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button-variants";
 import {
@@ -20,7 +22,7 @@ import ReleasesDoc from "@/content/releases.mdx";
 import ThemesDoc from "@/content/themes.mdx";
 import TroubleshootingDoc from "@/content/troubleshooting.mdx";
 import { cliData } from "@/data/generated/cli-data";
-import { Moon, Sun } from "lucide-react";
+import { GitCommitHorizontal, Moon, Sun, Tag } from "lucide-react";
 
 const docsNavItems = [
   { label: "Quick Start", to: "/docs/quick-start" },
@@ -36,6 +38,18 @@ type TocItem = {
   id: string;
   text: string;
   level: 2 | 3;
+};
+
+type ReleaseEntry = {
+  tagName: string | null;
+  name: string | null;
+  publishedAt: string | null;
+  url: string | null;
+  notes: string | null;
+  isPrerelease: boolean;
+  actorLogin: string | null;
+  actorAvatarUrl: string | null;
+  commitSha: string | null;
 };
 
 function slugifyHeading(text: string): string {
@@ -62,6 +76,58 @@ function formatValue(value: number | string | null): string {
 function formatTimestamp(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
+function formatRelativeTime(value: string | null): string {
+  if (!value) {
+    return "unknown time";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const diffSeconds = Math.round((date.getTime() - Date.now()) / 1000);
+  const absSeconds = Math.abs(diffSeconds);
+  const formatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+
+  if (absSeconds < 60) {
+    return formatter.format(diffSeconds, "second");
+  }
+
+  const diffMinutes = Math.round(diffSeconds / 60);
+  if (Math.abs(diffMinutes) < 60) {
+    return formatter.format(diffMinutes, "minute");
+  }
+
+  const diffHours = Math.round(diffMinutes / 60);
+  if (Math.abs(diffHours) < 24) {
+    return formatter.format(diffHours, "hour");
+  }
+
+  const diffDays = Math.round(diffHours / 24);
+  return formatter.format(diffDays, "day");
+}
+
+function formatCommitRef(commitSha: string | null): string {
+  if (!commitSha) {
+    return "n/a";
+  }
+
+  if (/^[0-9a-f]{7,40}$/i.test(commitSha)) {
+    return commitSha.slice(0, 7);
+  }
+
+  return commitSha;
+}
+
+function toCommitUrl(commitSha: string | null): string | null {
+  if (!commitSha || !/^[0-9a-f]{7,40}$/i.test(commitSha)) {
+    return null;
+  }
+
+  return `https://github.com/${cliData.source.repository}/commit/${commitSha}`;
 }
 
 function dataFreshnessLabel(): string {
@@ -575,30 +641,173 @@ export function TroubleshootingPage() {
 }
 
 export function ReleasesPage() {
+  const releaseEntries: ReleaseEntry[] = (
+    Array.isArray(cliData.releases) ? cliData.releases : []
+  ).slice(0, 20) as ReleaseEntry[];
+  const [visibleReleaseCount, setVisibleReleaseCount] = useState(
+    Math.min(5, releaseEntries.length),
+  );
+
+  useEffect(() => {
+    setVisibleReleaseCount(Math.min(5, releaseEntries.length));
+  }, [releaseEntries.length]);
+
+  const visibleReleases = releaseEntries.slice(0, visibleReleaseCount);
+  const remainingReleases = releaseEntries.length - visibleReleaseCount;
+  const changelogUrl = `https://github.com/${cliData.source.repository}/blob/main/CHANGELOG.md`;
+
   return (
     <div className="space-y-6">
       <DataCards />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Latest Release</CardTitle>
-          <CardDescription>
-            {cliData.release.tagName ?? "No tagged release detected yet."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm text-muted-foreground">
-          <p>
-            Published:{" "}
-            {cliData.release.publishedAt
-              ? formatTimestamp(cliData.release.publishedAt)
-              : "n/a"}
+      <section className="space-y-4">
+        <div className="space-y-2 my-16">
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge variant="secondary">taki-cli releases</Badge>
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+            Releases and Changelog
+          </h1>
+          <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+            Full release notes rendered from GitHub, including What&apos;s
+            Changed, linked pull requests, and full changelog comparisons.
           </p>
-          <p>
-            Notes:{" "}
-            {cliData.release.notes ??
-              "Release notes not available in snapshot."}
-          </p>
-          <div className="flex flex-wrap gap-2">
+        </div>
+
+        <div className="space-y-5 text-sm text-muted-foreground">
+          {visibleReleases.length > 0 ? (
+            <div className="space-y-4">
+              {visibleReleases.map((release, index) => (
+                <div
+                  key={release.tagName ?? release.url ?? `release-${index}`}
+                  className="grid md:grid-cols-[220px_minmax(0,1fr)] md:items-start"
+                >
+                  <aside className="space-y-3 px-1 py-6">
+                    <p className="text-sm font-medium text-foreground">
+                      {formatRelativeTime(release.publishedAt)}
+                    </p>
+
+                    <div className="flex items-center gap-2">
+                      {release.actorAvatarUrl ? (
+                        <img
+                          src={release.actorAvatarUrl}
+                          alt={`${release.actorLogin ?? "release author"} avatar`}
+                          className="h-7 w-7 rounded-full border border-border/60 object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="h-7 w-7 rounded-full border border-border/60 bg-muted" />
+                      )}
+                      <span className="text-sm text-foreground">
+                        {release.actorLogin ?? "unknown"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Tag className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span className="font-medium text-foreground">
+                        {release.tagName ?? "n/a"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <GitCommitHorizontal
+                        className="h-3.5 w-3.5"
+                        aria-hidden="true"
+                      />
+                      {toCommitUrl(release.commitSha) ? (
+                        <a
+                          href={toCommitUrl(release.commitSha) ?? undefined}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-foreground underline underline-offset-4"
+                        >
+                          {formatCommitRef(release.commitSha)}
+                        </a>
+                      ) : (
+                        <span className="font-medium text-foreground">
+                          {formatCommitRef(release.commitSha)}
+                        </span>
+                      )}
+                    </div>
+                  </aside>
+
+                  <div className="rounded-xl border border-border/70 bg-background/65 p-5">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                          {release.tagName ?? "Unversioned release"}
+                        </h3>
+                        {release.name && release.name !== release.tagName ? (
+                          <p className="text-sm text-muted-foreground">
+                            {release.name}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div>
+                        {release.isPrerelease ? (
+                          <Badge variant="secondary">Pre-release</Badge>
+                        ) : (
+                          <Badge variant="outline">Stable</Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <p className="mt-2 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                      Published{" "}
+                      {release.publishedAt
+                        ? formatTimestamp(release.publishedAt)
+                        : "n/a"}
+                    </p>
+                    <div className="mt-4 text-[0.95rem] leading-7 text-foreground [&_h1]:mt-5 [&_h1]:text-xl [&_h1]:font-semibold [&_h1]:tracking-tight [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:tracking-tight [&_p]:my-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_code]:rounded-sm [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_pre]:my-4 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:border [&_pre]:border-border/70 [&_pre]:bg-muted/50 [&_pre]:p-3 [&_pre]:text-sm [&_pre_code]:bg-transparent [&_pre_code]:p-0">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          a: (props) => (
+                            <a
+                              {...props}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="font-medium underline underline-offset-4"
+                            />
+                          ),
+                        }}
+                      >
+                        {release.notes ?? "Release notes not available."}
+                      </ReactMarkdown>
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <a
+                        className={buttonVariants({ variant: "secondary" })}
+                        href={release.url ?? cliData.links.releasesUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View release
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>No release entries are available in the current snapshot.</p>
+          )}
+
+          {remainingReleases > 0 ? (
+            <button
+              type="button"
+              className={buttonVariants({ variant: "outline" })}
+              onClick={() => {
+                setVisibleReleaseCount((count) =>
+                  Math.min(count + 5, releaseEntries.length),
+                );
+              }}
+            >
+              Show more releases ({remainingReleases} more)
+            </button>
+          ) : null}
+
+          <div className="flex flex-wrap gap-2 mt-16">
             <a
               className={buttonVariants({ variant: "secondary" })}
               href={cliData.links.releasesUrl}
@@ -606,6 +815,14 @@ export function ReleasesPage() {
               rel="noreferrer"
             >
               View CLI releases
+            </a>
+            <a
+              className={buttonVariants({ variant: "outline" })}
+              href={changelogUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              View CHANGELOG.md
             </a>
             <a
               className={buttonVariants({ variant: "outline" })}
@@ -628,8 +845,8 @@ export function ReleasesPage() {
             Snapshot updated: {formatTimestamp(cliData.generatedAt)} (
             {dataFreshnessLabel()})
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       <ArticleShell>
         <ReleasesDoc />

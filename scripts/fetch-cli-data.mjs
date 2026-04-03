@@ -11,7 +11,7 @@ const repo = process.env.TAKI_CLI_REPO ?? "taki-cli";
 const packageName = process.env.TAKI_CLI_PACKAGE ?? "@kwiruu/taki-cli";
 
 const githubRepoUrl = `https://api.github.com/repos/${owner}/${repo}`;
-const githubLatestReleaseUrl = `https://api.github.com/repos/${owner}/${repo}/releases/latest`;
+const githubReleasesUrl = `https://api.github.com/repos/${owner}/${repo}/releases?per_page=20`;
 const npmRegistryUrl = `https://registry.npmjs.org/${encodeURIComponent(packageName)}`;
 
 const generatedDir = path.join(projectRoot, "src", "data", "generated");
@@ -37,6 +37,7 @@ const defaultSnapshot = {
     url: `https://github.com/${owner}/${repo}/releases`,
     notes: null,
   },
+  releases: [],
   npm: {
     version: null,
     publishedAt: null,
@@ -89,7 +90,143 @@ async function fetchJson(url, options = {}) {
   return response.json();
 }
 
-function toSnapshot({ repoData, releaseData, npmData, previousSnapshot }) {
+function normalizeReleaseEntry(item) {
+  return {
+    tagName: toNullableString(item?.tagName),
+    name: toNullableString(item?.name),
+    publishedAt: toNullableString(item?.publishedAt),
+    url: toNullableString(item?.url),
+    notes: toNullableString(item?.notes),
+    isPrerelease: Boolean(item?.isPrerelease),
+    actorLogin: toNullableString(item?.actorLogin),
+    actorAvatarUrl: toNullableString(item?.actorAvatarUrl),
+    commitSha: toNullableString(item?.commitSha),
+  };
+}
+
+async function resolveTagCommitSha(tagName) {
+  const encodedTag = encodeURIComponent(tagName);
+  const refData = await fetchJson(
+    `${githubRepoUrl}/git/ref/tags/${encodedTag}`,
+    {
+      headers: githubHeaders,
+      optionalNotFound: true,
+    },
+  );
+
+  if (!refData?.object?.sha || !refData?.object?.type) {
+    return null;
+  }
+
+  let currentType = refData.object.type;
+  let currentSha = refData.object.sha;
+
+  for (let depth = 0; depth < 4 && currentType === "tag"; depth += 1) {
+    const tagData = await fetchJson(`${githubRepoUrl}/git/tags/${currentSha}`, {
+      headers: githubHeaders,
+      optionalNotFound: true,
+    });
+
+    if (!tagData?.object?.sha || !tagData?.object?.type) {
+      return null;
+    }
+
+    currentType = tagData.object.type;
+    currentSha = tagData.object.sha;
+  }
+
+  return currentType === "commit" ? currentSha : null;
+}
+
+async function resolveCommitActor(commitSha) {
+  if (!commitSha) {
+    return {
+      actorLogin: null,
+      actorAvatarUrl: null,
+    };
+  }
+
+  const commitData = await fetchJson(`${githubRepoUrl}/commits/${commitSha}`, {
+    headers: githubHeaders,
+    optionalNotFound: true,
+  });
+
+  return {
+    actorLogin:
+      toNullableString(commitData?.author?.login) ??
+      toNullableString(commitData?.committer?.login),
+    actorAvatarUrl:
+      toNullableString(commitData?.author?.avatar_url) ??
+      toNullableString(commitData?.committer?.avatar_url),
+  };
+}
+
+async function enrichReleaseEntries(releaseData) {
+  if (!Array.isArray(releaseData)) {
+    return [];
+  }
+
+  const baseEntries = releaseData
+    .filter((item) => item && typeof item === "object")
+    .map((item) => ({
+      tagName: toNullableString(item.tag_name),
+      name: toNullableString(item.name),
+      publishedAt: toNullableString(item.published_at),
+      url: toNullableString(item.html_url),
+      notes: toNullableString(item.body),
+      isPrerelease: Boolean(item.prerelease),
+      actorLogin: toNullableString(item.author?.login),
+      actorAvatarUrl: toNullableString(item.author?.avatar_url),
+      commitSha: toNullableString(item.target_commitish),
+    }))
+    .filter((item) => item.tagName)
+    .slice(0, 20);
+
+  return Promise.all(
+    baseEntries.map(async (entry) => {
+      let commitSha = entry.commitSha;
+
+      try {
+        commitSha = (await resolveTagCommitSha(entry.tagName)) ?? commitSha;
+      } catch {
+        // Keep existing commitSha fallback when tag resolution fails.
+      }
+
+      let actorLogin = entry.actorLogin;
+      let actorAvatarUrl = entry.actorAvatarUrl;
+
+      try {
+        const actor = await resolveCommitActor(commitSha);
+        actorLogin = actor.actorLogin ?? actorLogin;
+        actorAvatarUrl = actor.actorAvatarUrl ?? actorAvatarUrl;
+      } catch {
+        // Keep release-author fallback when commit actor lookup fails.
+      }
+
+      return {
+        ...entry,
+        commitSha,
+        actorLogin,
+        actorAvatarUrl,
+      };
+    }),
+  );
+}
+
+function toSnapshot({ repoData, releasesData, npmData, previousSnapshot }) {
+  const previousReleases = Array.isArray(previousSnapshot?.releases)
+    ? previousSnapshot.releases
+        .map((item) => normalizeReleaseEntry(item))
+        .filter((item) => item.tagName)
+    : [];
+  const fetchedReleases = Array.isArray(releasesData)
+    ? releasesData
+        .map((item) => normalizeReleaseEntry(item))
+        .filter((item) => item.tagName)
+    : [];
+  const releases =
+    fetchedReleases.length > 0 ? fetchedReleases : previousReleases;
+  const latestRelease = releases[0] ?? null;
   const latestVersion = toNullableString(npmData?.["dist-tags"]?.latest);
 
   return {
@@ -112,22 +249,23 @@ function toSnapshot({ repoData, releaseData, npmData, previousSnapshot }) {
     },
     release: {
       tagName:
-        toNullableString(releaseData?.tag_name) ??
+        toNullableString(latestRelease?.tagName) ??
         toNullableString(previousSnapshot?.release?.tagName),
       name:
-        toNullableString(releaseData?.name) ??
+        toNullableString(latestRelease?.name) ??
         toNullableString(previousSnapshot?.release?.name),
       publishedAt:
-        toNullableString(releaseData?.published_at) ??
+        toNullableString(latestRelease?.publishedAt) ??
         toNullableString(previousSnapshot?.release?.publishedAt),
       url:
-        toNullableString(releaseData?.html_url) ??
+        toNullableString(latestRelease?.url) ??
         toNullableString(previousSnapshot?.release?.url) ??
         defaultSnapshot.release.url,
       notes:
-        toNullableString(releaseData?.body)?.slice(0, 320) ??
+        toNullableString(latestRelease?.notes) ??
         toNullableString(previousSnapshot?.release?.notes),
     },
+    releases,
     npm: {
       version:
         latestVersion ?? toNullableString(previousSnapshot?.npm?.version),
@@ -164,7 +302,7 @@ async function run() {
 
   const [repoResult, releaseResult, npmResult] = await Promise.allSettled([
     fetchJson(githubRepoUrl, { headers: githubHeaders }),
-    fetchJson(githubLatestReleaseUrl, {
+    fetchJson(githubReleasesUrl, {
       headers: githubHeaders,
       optionalNotFound: true,
     }),
@@ -175,10 +313,11 @@ async function run() {
   const releaseData =
     releaseResult.status === "fulfilled" ? releaseResult.value : null;
   const npmData = npmResult.status === "fulfilled" ? npmResult.value : null;
+  const releasesData = await enrichReleaseEntries(releaseData);
 
   const snapshot = toSnapshot({
     repoData,
-    releaseData,
+    releasesData,
     npmData,
     previousSnapshot,
   });
@@ -200,6 +339,7 @@ async function run() {
   console.log(`- Repo: ${snapshot.source.repository}`);
   console.log(`- Stars: ${snapshot.stats.stars ?? "n/a"}`);
   console.log(`- Latest release: ${snapshot.release.tagName ?? "n/a"}`);
+  console.log(`- Release entries: ${snapshot.releases.length}`);
   console.log(`- npm version: ${snapshot.npm.version ?? "n/a"}`);
 }
 
