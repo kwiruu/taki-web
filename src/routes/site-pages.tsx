@@ -383,8 +383,9 @@ function DocsShell({ children }: { children: ReactNode }) {
                 <a
                   key={item.id}
                   href={`#${item.id}`}
+                  title={item.text}
                   className={cn(
-                    "block h-8 w-full rounded-md bg-transparent px-2 text-sm leading-8 text-muted-foreground no-underline transition-colors hover:bg-transparent hover:text-foreground focus-visible:bg-transparent focus-visible:text-foreground",
+                    "block h-8 w-full max-w-full truncate rounded-md bg-transparent px-2 text-sm leading-8 text-muted-foreground no-underline transition-colors hover:bg-transparent hover:text-foreground focus-visible:bg-transparent focus-visible:text-foreground",
                     activeTocId === item.id && "text-foreground",
                     item.level === 3 && "pl-5",
                   )}
