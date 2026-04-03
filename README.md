@@ -1,73 +1,80 @@
-# React + TypeScript + Vite
+# Taki Docs
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Website and documentation app for `@kwiruu/taki-cli`.
 
-Currently, two official plugins are available:
+Built with React, TypeScript, Vite, MDX, and TanStack Router.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Requirements
 
-## React Compiler
+- Node.js 20+
+- npm 10+
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Local development
 
-## Expanding the ESLint configuration
+Install dependencies:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Run the dev server:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+The app runs on the default Vite port unless overridden.
+
+## Useful scripts
+
+```bash
+# start local dev server
+npm run dev
+
+# fetch latest CLI metadata snapshot
+npm run fetch:cli-data
+
+# production build (fetch + typecheck + vite build)
+npm run build
+
+# lint source files
+npm run lint
+```
+
+## Build output
+
+Production assets are generated in:
+
+```text
+dist/
+```
+
+## Deployment (Cloudflare Pages)
+
+This repository is intended to be deployed as a static site on **Cloudflare Pages**.
+
+Recommended Git-connected Pages settings:
+
+- Framework preset: `Vite`
+- Build command: `npm run build`
+- Build output directory: `dist`
+- Root directory: `/`
+
+### Important
+
+- This repo does **not** require a Worker runtime for normal hosting.
+- There is no `wrangler.toml` in the project because deployment target is Pages static hosting.
+- SPA route fallback is configured with `public/_redirects`.
+
+## Data snapshot behavior
+
+`npm run build` runs `scripts/fetch-cli-data.mjs`.
+
+If upstream API calls fail during build, the script writes a partial/fallback snapshot so the site still deploys.
+
+## Project highlights
+
+- MDX docs pages under `src/content`
+- Shared UI components under `src/components/ui`
+- Site routes/layout in `src/routes/site-pages.tsx`
+- Generated CLI metadata in `src/data/generated`
