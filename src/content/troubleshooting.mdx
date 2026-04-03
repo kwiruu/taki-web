@@ -1,0 +1,127 @@
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+# Troubleshooting
+
+<Badge variant="secondary">Diagnostics</Badge>
+
+When Taki behavior is unexpected, use the checklist below before filing an issue.
+
+<Card className="my-6">
+  <CardHeader>
+    <CardTitle>Baseline checks first</CardTitle>
+    <CardDescription>
+      Most startup problems come from config path, cwd, or service command
+      mismatch.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    Confirm the command runs manually outside Taki, then mirror that exact
+    command and working directory in `taki.json`.
+  </CardContent>
+</Card>
+
+<Accordion defaultValue="missing-config">
+	<AccordionItem value="missing-config">
+		<AccordionTrigger>Unable to read config (`taki.json`)</AccordionTrigger>
+		<AccordionContent>
+
+Symptom:
+
+```text
+Unable to read config ... taki.json
+```
+
+Fix:
+
+```bash
+taki init
+# or
+taki run --config ./path/to/taki.json
+```
+
+    	</AccordionContent>
+    </AccordionItem>
+
+    <AccordionItem value="health-failing">
+    	<AccordionTrigger>Service never becomes healthy</AccordionTrigger>
+    	<AccordionContent>
+
+1. Validate `healthCheck` fields (`pattern`, `url`, `timeoutMs`, `intervalMs`).
+2. Confirm your service really emits the expected log line or returns `200` on the health URL.
+3. Increase startup timeout for heavier services.
+
+Example:
+
+```json
+"healthCheck": {
+	"type": "http",
+	"url": "http://127.0.0.1:3000/health",
+	"intervalMs": 1000,
+	"timeoutMs": 45000
+}
+```
+
+    	</AccordionContent>
+    </AccordionItem>
+
+    <AccordionItem value="wrong-cwd">
+    	<AccordionTrigger>Command runs in the wrong directory</AccordionTrigger>
+    	<AccordionContent>
+
+Set `cwd` per service:
+
+```json
+{
+  "name": "api",
+  "command": "npm",
+  "args": ["run", "dev"],
+  "cwd": "./services/api"
+}
+```
+
+Use absolute paths when debugging path issues.
+
+    	</AccordionContent>
+    </AccordionItem>
+
+    <AccordionItem value="logs-truncated">
+    	<AccordionTrigger>Logs seem truncated</AccordionTrigger>
+    	<AccordionContent>
+
+Increase buffer size in config or at runtime:
+
+```bash
+taki run --max-log-lines 1200
+```
+
+or
+
+```json
+{
+  "maxLogLines": 1200
+}
+```
+
+    	</AccordionContent>
+    </AccordionItem>
+
+</Accordion>
+
+## Before reporting a bug
+
+1. Include your Taki version (`taki version`).
+2. Share the command and relevant service config block.
+3. Include the failing behavior and expected behavior.

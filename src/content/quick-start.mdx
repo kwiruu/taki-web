@@ -1,0 +1,127 @@
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+# Quick Start
+
+<Badge variant="secondary">Fast path</Badge>
+
+This guide gets you from zero to a working multi-service dashboard in a few minutes.
+
+<Card className="my-6">
+  <CardHeader>
+    <CardTitle>What you get after this page</CardTitle>
+    <CardDescription>
+      You will have a generated config, at least one service, and a running Taki
+      dashboard.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    If you already have a project with scripts like `npm run dev` and `npm run
+    api`, you can wire both into one Taki session and control them from a single
+    terminal UI.
+  </CardContent>
+</Card>
+
+## 1. Install the CLI globally
+
+```bash
+npm install -g @kwiruu/taki-cli
+```
+
+Verify installation:
+
+```bash
+taki version
+```
+
+## 2. Initialize your config
+
+Run this in your project root:
+
+```bash
+taki init
+```
+
+The initializer creates a `taki.json` file and can also add a convenient script entry in your `package.json`.
+
+<figure className="my-5 rounded-xl bg-[#0c0c0c] py-2">
+  <img
+    src="/init-sample.png"
+    alt="Sample terminal output after running taki init"
+    className="w-full rounded-lg"
+    loading="lazy"
+  />
+</figure>
+
+## 3. Add your services
+
+If your project has more than one process, add each process once:
+
+```bash
+taki add --name web --command npm --args "run dev"
+taki add --name api --command npm --args "run dev:api"
+```
+
+Tip: use `--cwd` when the service runs from a subfolder.
+
+## 4. Run the dashboard
+
+```bash
+taki run
+```
+
+Shortcut: `taki` also starts the dashboard.
+
+<figure className="my-5 rounded-xl bg-[#0c0c0c] p-1">
+  <img
+    src="/run-sample.png"
+    alt="Sample terminal output after running taki run"
+    className="w-full rounded-lg"
+    loading="lazy"
+  />
+</figure>
+
+## 5. Daily workflow
+
+1. Start everything with `taki run`.
+2. Switch focused pane with `Tab`.
+3. Restart focused service with `r`.
+4. Quit safely with `q` or `Ctrl+C`.
+
+## FAQ
+
+<Accordion defaultValue="item-1">
+  <AccordionItem value="item-1">
+    <AccordionTrigger>Where should I run `taki init`?</AccordionTrigger>
+    <AccordionContent>
+      Run it at the root of the project that owns your services. That keeps
+      `taki.json` close to your `package.json` and repo scripts.
+    </AccordionContent>
+  </AccordionItem>
+  <AccordionItem value="item-2">
+    <AccordionTrigger>Can I commit `taki.json`?</AccordionTrigger>
+    <AccordionContent>
+      Yes. Most teams commit it so everyone gets the same local orchestration
+      defaults.
+    </AccordionContent>
+  </AccordionItem>
+  <AccordionItem value="item-3">
+    <AccordionTrigger>What if I need custom startup order?</AccordionTrigger>
+    <AccordionContent>
+      Use `startAfter` in the service definition. See the Config page for
+      concrete examples.
+    </AccordionContent>
+  </AccordionItem>
+</Accordion>

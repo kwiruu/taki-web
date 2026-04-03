@@ -1,0 +1,144 @@
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+# Command Reference
+
+<Badge variant="secondary">CLI surface</Badge>
+
+Source of truth: `taki-cli/src/bin/cli.ts`.
+
+## Command model
+
+Taki uses one executable with focused subcommands:
+
+```bash
+taki run
+taki init
+taki add
+taki config
+taki version
+```
+
+<Card className="my-6">
+	<CardHeader>
+		<CardTitle>Global options are shared</CardTitle>
+		<CardDescription>These flags can be used with most commands.</CardDescription>
+	</CardHeader>
+	<CardContent>
+
+| Option                    | Purpose                             |
+| ------------------------- | ----------------------------------- |
+| `--config <path>`         | Use a non-default config file       |
+| `--max-log-lines <count>` | Cap in-memory log lines per service |
+| `--shutdown-timeout <ms>` | Time budget for graceful shutdown   |
+
+    </CardContent>
+
+</Card>
+
+## Command details
+
+<Tabs defaultValue="run" className="my-6">
+	<TabsList>
+		<TabsTrigger value="run">run</TabsTrigger>
+		<TabsTrigger value="init">init</TabsTrigger>
+		<TabsTrigger value="add">add</TabsTrigger>
+		<TabsTrigger value="config">config</TabsTrigger>
+		<TabsTrigger value="version">version</TabsTrigger>
+	</TabsList>
+
+    <TabsContent value="run">
+
+Starts the interactive dashboard and launches configured services.
+
+```bash
+taki run
+taki run --config ./taki.json --max-log-lines 400
+```
+
+    </TabsContent>
+
+    <TabsContent value="init">
+
+Bootstraps configuration for your project.
+
+```bash
+taki init
+taki init --force
+```
+
+Options:
+
+```bash
+--config <path>
+--force
+```
+
+    </TabsContent>
+
+    <TabsContent value="add">
+
+Adds a service entry to your existing config.
+
+```bash
+taki add --name api --command npm --args "run dev:api" --cwd ./services/api
+```
+
+Options:
+
+```bash
+--config <path>
+--name <name>
+--command <command>
+--args "..."
+--color <color>
+--cwd <path>
+--start-after <names>
+--yes
+```
+
+    </TabsContent>
+
+    <TabsContent value="config">
+
+Opens config-oriented flows, depending on CLI version.
+
+```bash
+taki config
+```
+
+Use this to inspect or update config behavior from the CLI side.
+
+    </TabsContent>
+
+    <TabsContent value="version">
+
+Prints installed CLI version.
+
+```bash
+taki version
+```
+
+    </TabsContent>
+
+</Tabs>
+
+## Practical examples
+
+```bash
+# Add web service
+taki add --name web --command npm --args "run dev"
+
+# Add worker with startup dependency
+taki add --name worker --command npm --args "run worker" --start-after web
+
+# Run with explicit config
+taki run --config ./infra/taki.json
+```

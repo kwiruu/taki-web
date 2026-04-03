@@ -1,0 +1,135 @@
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+# Themes
+
+<Badge variant="secondary">Visual customization</Badge>
+
+Source of truth: `taki-cli/src/theme/index.ts`.
+
+Theme selection is persisted to `taki.json` under `ui.theme`.
+
+## Families
+
+<Tabs defaultValue="basic" className="my-6">
+	<TabsList>
+		<TabsTrigger value="basic">Basic</TabsTrigger>
+		<TabsTrigger value="vscode">VS Code</TabsTrigger>
+		<TabsTrigger value="terminal">Terminal</TabsTrigger>
+	</TabsList>
+
+    <TabsContent value="basic">
+
+<p>Simple high-contrast presets for quick readability:</p>
+
+<ul>
+  <li>
+    <code>default-white</code>
+  </li>
+  <li>
+    <code>basic-blue</code>
+  </li>
+  <li>
+    <code>basic-red</code>
+  </li>
+  <li>
+    <code>basic-cyan</code>
+  </li>
+  <li>
+    <code>basic-pink</code>
+  </li>
+</ul>
+
+    </TabsContent>
+
+    <TabsContent value="vscode">
+
+<p>Familiar IDE-inspired presets:</p>
+
+<ul>
+  <li>
+    <code>vscode-dark-plus</code>
+  </li>
+  <li>
+    <code>vscode-light-plus</code>
+  </li>
+  <li>
+    <code>vscode-monokai</code>
+  </li>
+  <li>
+    <code>vscode-github-dark</code>
+  </li>
+  <li>
+    <code>vscode-github-light</code>
+  </li>
+</ul>
+
+    </TabsContent>
+
+    <TabsContent value="terminal">
+
+<p>Classic terminal palettes:</p>
+
+<ul>
+  <li>
+    <code>terminal-gruvbox-dark</code>
+  </li>
+  <li>
+    <code>terminal-solarized-dark</code>
+  </li>
+  <li>
+    <code>terminal-solarized-light</code>
+  </li>
+  <li>
+    <code>terminal-nord</code>
+  </li>
+  <li>
+    <code>terminal-dracula</code>
+  </li>
+  <li>
+    <code>terminal-one-dark</code>
+  </li>
+</ul>
+
+    </TabsContent>
+
+</Tabs>
+
+## Set theme in config
+
+```json
+{
+  "ui": {
+    "theme": "vscode-dark-plus"
+  }
+}
+```
+
+## Choosing a theme
+
+<Card className="my-6">
+  <CardHeader>
+    <CardTitle>Recommendation</CardTitle>
+    <CardDescription>
+      Pick based on contrast and session length, not aesthetics alone.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    For long debugging sessions, use high-contrast dark themes such as
+    `vscode-dark-plus` or `terminal-nord`. For bright rooms, `vscode-light-plus`
+    or `default-white` may reduce eye strain.
+  </CardContent>
+</Card>
+
+## Fast switch workflow
+
+1. Edit `taki.json` and change `ui.theme`.
+2. Save file.
+3. Restart dashboard using `r` for focused service or restart full session.

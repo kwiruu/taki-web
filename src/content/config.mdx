@@ -1,0 +1,145 @@
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+# Config Schema
+
+<Badge variant="secondary">Configuration</Badge>
+
+Source of truth: `taki-cli/README.md` plus runtime validation in CLI core.
+
+## Minimal valid config
+
+```json
+{
+  "services": [
+    {
+      "name": "web",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "color": "green"
+    }
+  ],
+  "maxLogLines": 200,
+  "ui": {
+    "theme": "vscode-dark-plus"
+  }
+}
+```
+
+<Card className="my-6">
+  <CardHeader>
+    <CardTitle>Config location</CardTitle>
+    <CardDescription>Default file is `taki.json` in your current project root.</CardDescription>
+  </CardHeader>
+  <CardContent>
+    Use `--config <path>` for alternate locations, monorepos, or multiple environments.
+  </CardContent>
+</Card>
+
+## Service fields explained
+
+| Field         | Type     | What it controls                  |
+| ------------- | -------- | --------------------------------- |
+| `name`        | string   | Display name in dashboard         |
+| `command`     | string   | Executable to run                 |
+| `args`        | string[] | Command arguments                 |
+| `color`       | string   | Visual color accent in UI         |
+| `cwd`         | string   | Working directory for process     |
+| `env`         | object   | Per-service environment overrides |
+| `startAfter`  | string[] | Startup dependency ordering       |
+| `healthCheck` | object   | Readiness detection rules         |
+
+## Health checks
+
+<Tabs defaultValue="log" className="my-6">
+  <TabsList>
+    <TabsTrigger value="log">Log pattern</TabsTrigger>
+    <TabsTrigger value="http">HTTP endpoint</TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="log">
+
+```json
+{
+  "type": "log",
+  "pattern": "ready",
+  "timeoutMs": 20000
+}
+```
+
+Use this when your service prints a reliable startup message.
+
+  </TabsContent>
+
+  <TabsContent value="http">
+
+```json
+{
+  "type": "http",
+  "url": "http://127.0.0.1:3000/health",
+  "intervalMs": 500,
+  "timeoutMs": 20000
+}
+```
+
+Use this for APIs or web services with explicit health endpoints.
+
+  </TabsContent>
+</Tabs>
+
+## Common patterns
+
+```json
+{
+  "services": [
+    {
+      "name": "web",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "startAfter": ["api"]
+    },
+    {
+      "name": "api",
+      "command": "npm",
+      "args": ["run", "dev:api"],
+      "healthCheck": {
+        "type": "http",
+        "url": "http://127.0.0.1:3001/health",
+        "intervalMs": 1000,
+        "timeoutMs": 30000
+      }
+    }
+  ]
+}
+```
+
+## FAQ
+
+<Accordion defaultValue="item-1">
+  <AccordionItem value="item-1">
+    <AccordionTrigger>Should I commit `taki.json`?</AccordionTrigger>
+    <AccordionContent>
+      Yes for team consistency, unless it contains sensitive local-only values.
+    </AccordionContent>
+  </AccordionItem>
+  <AccordionItem value="item-2">
+    <AccordionTrigger>Can I use env vars?</AccordionTrigger>
+    <AccordionContent>
+      Yes. Place service-specific values under `env`, or rely on your shell
+      environment for shared values.
+    </AccordionContent>
+  </AccordionItem>
+</Accordion>

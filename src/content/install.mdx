@@ -1,0 +1,103 @@
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+# Install and First Run
+
+<Badge variant="secondary">Getting started</Badge>
+
+This page covers installation, verification, and your first successful run.
+
+## Install globally
+
+<Tabs defaultValue="npm" className="my-6">
+	<TabsList>
+		<TabsTrigger value="npm">npm</TabsTrigger>
+		<TabsTrigger value="pnpm">pnpm</TabsTrigger>
+		<TabsTrigger value="yarn">yarn</TabsTrigger>
+	</TabsList>
+	<TabsContent value="npm">
+
+```bash
+npm install -g @kwiruu/taki-cli
+```
+
+    </TabsContent>
+    <TabsContent value="pnpm">
+
+```bash
+pnpm add -g @kwiruu/taki-cli
+```
+
+    </TabsContent>
+    <TabsContent value="yarn">
+
+```bash
+yarn global add @kwiruu/taki-cli
+```
+
+    </TabsContent>
+
+</Tabs>
+
+## Verify the binary
+
+```bash
+taki version
+```
+
+If the command is not found, restart the terminal and confirm your package manager global bin path is in `PATH`.
+
+<Card className="my-6">
+  <CardHeader>
+    <CardTitle>Permission-safe install tip</CardTitle>
+    <CardDescription>
+      Avoid installing globals with elevated system permissions whenever
+      possible.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    Use a user-scoped Node setup (for example via nvm, fnm, or Volta) so global
+    packages are installed without `sudo`/administrator flows.
+  </CardContent>
+</Card>
+
+## Initialize config
+
+```bash
+taki init
+```
+
+You can force regeneration if needed:
+
+```bash
+taki init --force
+```
+
+## First run
+
+```bash
+taki run
+```
+
+Equivalent shortcut:
+
+```bash
+taki
+```
+
+## Update and uninstall
+
+```bash
+# update
+npm install -g @kwiruu/taki-cli@latest
+
+# uninstall
+npm uninstall -g @kwiruu/taki-cli
+```

@@ -1,0 +1,106 @@
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+# Dashboard and Shortcuts
+
+<Badge variant="secondary">Terminal UI</Badge>
+
+Source of truth: `taki-cli/src/ui/app.tsx`.
+
+The dashboard is where you observe logs, switch focus, and control service lifecycle.
+
+## View modes and layout behavior
+
+<Tabs defaultValue="views" className="my-6">
+	<TabsList>
+		<TabsTrigger value="views">View Modes</TabsTrigger>
+		<TabsTrigger value="layouts">Layouts</TabsTrigger>
+	</TabsList>
+
+    <TabsContent value="views">
+
+<ul>
+  <li>
+    <strong>Normal</strong>: primary run state with service panes.
+  </li>
+  <li>
+    <strong>Options</strong>: configuration and control overlays.
+  </li>
+  <li>
+    <strong>Full-log</strong>: expanded log stream for one focused service.
+  </li>
+  <li>
+    <strong>Shortcuts</strong>: in-app keyboard help.
+  </li>
+</ul>
+
+    </TabsContent>
+
+    <TabsContent value="layouts">
+
+<ul>
+  <li>
+    <strong>Single pane</strong>: one service at a time.
+  </li>
+  <li>
+    <strong>Vertical panes</strong>: stacked top-to-bottom.
+  </li>
+  <li>
+    <strong>Horizontal panes</strong>: side-by-side.
+  </li>
+  <li>
+    <strong>Grid panes</strong>: multi-service matrix for dense monitoring.
+  </li>
+</ul>
+
+    </TabsContent>
+
+</Tabs>
+
+<Card className="my-6">
+  <CardHeader>
+    <CardTitle>How focus works</CardTitle>
+    <CardDescription>
+      Most actions target the focused service pane.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    Use `Tab` or directional keys to move focus first, then use actions like
+    restart. This prevents accidentally affecting the wrong process.
+  </CardContent>
+</Card>
+
+## Keyboard controls
+
+| Key                             | Action                         |
+| ------------------------------- | ------------------------------ |
+| `q` / `Ctrl+C`                  | Quit and trigger shutdown flow |
+| `o`                             | Open options panel             |
+| `?`                             | Open shortcuts panel           |
+| `r`                             | Restart focused service        |
+| `1` / `2` / `3` / `4`           | Switch layouts quickly         |
+| `Tab`                           | Move focus to next pane        |
+| `Arrow keys` or `h` `j` `k` `l` | Move selection/focus           |
+
+## Operational tips
+
+1. Start with a grid or vertical layout when booting multiple services.
+2. Switch to full-log when diagnosing one noisy service.
+3. Keep `maxLogLines` high enough for debugging sessions.
+
+## Typical session
+
+```text
+1) taki run
+2) wait for services to become healthy
+3) Tab to select a failing service
+4) press r to restart
+5) press ? when you need a shortcut reminder
+```

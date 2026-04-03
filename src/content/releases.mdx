@@ -1,0 +1,69 @@
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+# Releases and Changelog
+
+<Badge variant="secondary">Release lifecycle</Badge>
+
+Taki uses automated release workflows in the CLI repository to reduce manual mistakes.
+
+## How the pipeline works
+
+<Tabs defaultValue="flow" className="my-6">
+	<TabsList>
+		<TabsTrigger value="flow">Flow</TabsTrigger>
+		<TabsTrigger value="publish">Publish</TabsTrigger>
+	</TabsList>
+
+    <TabsContent value="flow">
+
+<ol>
+  <li>
+    Commits land on <code>main</code>.
+  </li>
+  <li>Release Please opens a release PR with version and changelog updates.</li>
+  <li>Merging that PR creates a new git tag.</li>
+</ol>
+
+    </TabsContent>
+
+    <TabsContent value="publish">
+
+<ol>
+  <li>
+    A <code>v*</code> tag triggers the publish workflow.
+  </li>
+  <li>Package is published to npm with provenance.</li>
+  <li>Release metadata becomes available for docs and dashboards.</li>
+</ol>
+
+    </TabsContent>
+
+</Tabs>
+
+<Card className="my-6">
+  <CardHeader>
+    <CardTitle>Why this matters</CardTitle>
+    <CardDescription>
+      Automated releases improve consistency and traceability.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    Every release links code, changelog, and published package state through
+    reproducible CI steps, making regression tracking and upgrade planning
+    easier.
+  </CardContent>
+</Card>
+
+## Useful links
+
+- [CLI releases](https://github.com/kwiruu/taki-cli/releases)
+- [Release Please PRs](https://github.com/kwiruu/taki-cli/pulls?q=is%3Apr+release+please)
+- [npm package](https://www.npmjs.com/package/@kwiruu/taki-cli)
